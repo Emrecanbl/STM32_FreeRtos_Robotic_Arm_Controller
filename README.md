@@ -23,4 +23,4 @@ Key Features
 
 #3-Axis Control with Gripper: The robotic arm features three degrees of freedom, controlled by SG90 servo motors, and a gripper for object manipulati
 
-![Sample](https://github.com/Emrecanbl/STM32_FreeRtos_Robotic_Arm_Controller/blob/main/8zxgha.gif?raw=true)
+![Sample](https://github.com/Emrecanbl/STM32_FreeRtos_Robotic_Arm_Controller/blob/main/8zxkjf.gif?raw=true)
