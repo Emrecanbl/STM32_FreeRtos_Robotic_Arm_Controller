@@ -8,18 +8,19 @@ The project is designed to explore the use of FreeRTOS in controlling a robotic 
 ![Sample](https://github.com/Emrecanbl/STM32_FreeRtos_Robotic_Arm_Controller/blob/main/rsz_11723388000535.jpg?raw=true)
 
 Key Features
-FreeRTOS Task Management: The system leverages FreeRTOS to handle multiple tasks concurrently, ensuring that the robotic arm's movements are smooth and synchronized.
 
-Counting Semaphores: Implemented to manage resource availability and synchronize task execution, particularly when accessing the UART interface.
+#FreeRTOS Task Management: The system leverages FreeRTOS to handle multiple tasks concurrently, ensuring that the robotic arm's movements are smooth and synchronized.
 
-Mutexes: Used to safeguard shared resources, preventing data corruption and ensuring thread safety.
+#Counting Semaphores: Implemented to manage resource availability and synchronize task execution, particularly when accessing the UART interface.
 
-Queues: Facilitates efficient inter-task communication, allowing tasks to exchange data with minimal delay.
+#Mutexes: Used to safeguard shared resources, preventing data corruption and ensuring thread safety.
 
-Hooks for Reliability: Implements stack overflow and malloc failure hooks to catch and handle errors during runtime, increasing system robustness.
+#Queues: Facilitates efficient inter-task communication, allowing tasks to exchange data with minimal delay.
 
-Synchronized Motion Control: Ensures that all motors driving the robotic arm move in unison, providing precise control over the arm's position.
+#Hooks for Reliability: Implements stack overflow and malloc failure hooks to catch and handle errors during runtime, increasing system robustness.
 
-3-Axis Control with Gripper: The robotic arm features three degrees of freedom, controlled by SG90 servo motors, and a gripper for object manipulati
+#Synchronized Motion Control: Ensures that all motors driving the robotic arm move in unison, providing precise control over the arm's position.
+
+#3-Axis Control with Gripper: The robotic arm features three degrees of freedom, controlled by SG90 servo motors, and a gripper for object manipulati
 
 ![Sample](https://github.com/Emrecanbl/STM32_FreeRtos_Robotic_Arm_Controller/blob/main/8zxgha.gif?raw=true)
