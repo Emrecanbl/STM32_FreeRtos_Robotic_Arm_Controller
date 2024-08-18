@@ -22,6 +22,7 @@ Key Features
 #Synchronized Motion Control: Ensures that all motors driving the robotic arm move in unison, providing precise control over the arm's position.
 
 #3-Axis Control with Gripper: The robotic arm features three degrees of freedom, controlled by SG90 servo motors, and a gripper for object manipulati
+
  
 ![Sample](https://github.com/Emrecanbl/STM32_FreeRtos_Robotic_Arm_Controller/blob/main/rsz_11723388000535.jpg?raw=true)
 
