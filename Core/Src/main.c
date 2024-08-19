@@ -36,10 +36,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define Servo_no_Base 	 1
+#define Servo_no_Base 	 	 1
 #define Servo_no_1 		 2
 #define Servo_no_2 		 3
-#define Servo_no_Gripper 4
+#define Servo_no_Gripper 	 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -457,7 +457,7 @@ void Angle_Cal_Task(void *argument)
 	  if(Vcp_Data_Available == 1){
 		  Vcp_Data_Available =0;
 		  //Data Format Vcp_Data_Available = 1&1&90&90&90
-		  	  	  	  	  	  	  	  	  //mode&Base&Joint1&Joint2&Gripper
+		  	  	  	  	   //mode&Base&Joint1&Joint2&Gripper
 		  if(Raw_VCP_Data[0]==49)		  //Joint Angle Control Mode
 		  {
 			  CDC_Transmit_FS("Joint Angle Control Mode\n", strlen("Joint Angle Control Mode\n"));
