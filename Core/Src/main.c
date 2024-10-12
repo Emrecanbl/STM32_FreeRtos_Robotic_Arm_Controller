@@ -473,6 +473,14 @@ void Angle_Cal_Task(void *argument)
 			          Servo_Angeles[i]=Angle;
 			          i++;
 			      }
+			  for(int i = 0;i<=3;i++){
+				  if(Servo_Angeles[i] <= 0){
+					  Servo_Angeles[i] = 1;
+				  }
+				  else if(Servo_Angeles[i] >= 180){
+					  Servo_Angeles[i] = 180;
+				  }
+			  }
 			  if (xSemaphoreTake(Moving_LockHandle, portMAX_DELAY) == pdTRUE) {
 				  if (xSemaphoreTake(Load_MutexHandle, portMAX_DELAY) == pdTRUE) {
 					  //Queue Load
