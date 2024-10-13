@@ -37,14 +37,14 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define Servo_no_Base 	 	 1
-#define Servo_no_1 		 2
-#define Servo_no_2 		 3
+#define Servo_no_1 		 	 2
+#define Servo_no_2 		 	 3
 #define Servo_no_Gripper 	 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define PI 3.14159265358979323846
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -119,8 +119,15 @@ const osSemaphoreAttr_t Moving_Lock_attributes = {
 uint8_t Raw_VCP_Data[64];
 uint8_t Vcp_Data_Available = 0;
 uint8_t Servo_Angeles[4];
+uint8_t Axis_Points[3];
 osStatus_t status_base,status_1,status_2,status_Gripper;
+
+double Px, Py, Pz; 			     						// Target Position
+double L1 = 65.0, L2 = 75.0 , L3 = 75.0; 				// Connection Lenght
+double theta1, theta2, theta3;  						// Joint Angle
+
 /* USER CODE END PV */
+
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -436,6 +443,73 @@ void Servo_Ramp(uint8_t start_angle, uint8_t end_angle, uint16_t step_delay,uint
         }
     }
 }
+int inverseKinematics(double Px, double Py, double Pz, double L1, double L2, double L3, double *theta1, double *theta2, double *theta3) {
+	*theta1 = atan2(Py, Px);
+    double r = sqrt(Px * Px + Py * Py);
+    double s = Pz;
+    double D = (r * r + s * s - L1 * L1 - L2 * L2) / (2 * L1 * L2);
+    if(fabs(D) > 1.0) {
+        return -1; // Not possible
+    }
+    *theta3 = atan2(-sqrt(1 - D * D), D);
+    double phi = atan2(s, r);
+    double psi = atan2(L2 * sin(*theta3), L1 + L2 * cos(*theta3));
+    *theta2 = phi - psi;
+    return 0; // Success
+}
+
+void MovetoAngle() {
+	  if (xSemaphoreTake(Moving_LockHandle, portMAX_DELAY) == pdTRUE) {
+		  if (xSemaphoreTake(Load_MutexHandle, portMAX_DELAY) == pdTRUE) {
+			  //Queue Load
+			  uint8_t count = osMessageQueueGetCount(Base_Servo_AngeleHandle);
+			  if(count==0){
+			  status_base = osMessageQueuePut(Base_Servo_AngeleHandle, &Servo_Angeles[0],8, 100);
+			  if (status_base != osOK) {
+				  CDC_Transmit_FS("Sender Base Queue Error\n", strlen("Sender Base Queue Error\n"));
+				 }
+			  }
+			  else{
+				  CDC_Transmit_FS("Sender Base Queue Full\n", strlen("Sender Base Queue Full\n"));
+			  }
+			  count = osMessageQueueGetCount(Joint1_Servo_AngleHandle);
+			  if(count==0){
+				status_1 = osMessageQueuePut(Joint1_Servo_AngleHandle, &Servo_Angeles[1],8, 100);
+			  if (status_1 != osOK) {
+				CDC_Transmit_FS("Sender Joint1 Queue Error\n", strlen("Sender Base Queue Error\n"));
+					}
+				}
+			  else{
+				  CDC_Transmit_FS("Sender Joint1 Queue Full\n", strlen("Sender Base Queue Full\n"));
+			  }
+			  count = osMessageQueueGetCount(Joint2_Servo_AngleHandle);
+			  if(count==0){
+				status_2 = osMessageQueuePut(Joint2_Servo_AngleHandle, &Servo_Angeles[2],8, 100);
+			  if (status_2 != osOK) {
+				CDC_Transmit_FS("Sender Joint2 Queue Error\n", strlen("Sender Base Queue Error\n"));
+					}
+				}
+			  else{
+				  CDC_Transmit_FS("Sender Joint2 Queue Full\n", strlen("Sender Base Queue Full\n"));
+			  }
+			  count = osMessageQueueGetCount(Gripper_Servo_AngleHandle);
+			  if(count==0){
+				status_Gripper = osMessageQueuePut(Gripper_Servo_AngleHandle, &Servo_Angeles[3],8, 100);
+			  if (status_Gripper != osOK) {
+				CDC_Transmit_FS("Sender Gripper Queue Error\n", strlen("Sender Base Queue Error\n"));
+					}
+				  }
+			  else{
+			  CDC_Transmit_FS("Sender Gripper Queue Full\n", strlen("Sender Base Queue Full\n"));
+			  }
+			}
+		  else {
+			  CDC_Transmit_FS("Failed to take the mutex\n", strlen("Failed to take the mutex\n"));
+		  }
+		  xSemaphoreGive(Load_MutexHandle);
+	  }
+
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_Angle_Cal_Task */
@@ -481,60 +555,41 @@ void Angle_Cal_Task(void *argument)
 					  Servo_Angeles[i] = 180;
 				  }
 			  }
-			  if (xSemaphoreTake(Moving_LockHandle, portMAX_DELAY) == pdTRUE) {
-				  if (xSemaphoreTake(Load_MutexHandle, portMAX_DELAY) == pdTRUE) {
-					  //Queue Load
-					  uint8_t count = osMessageQueueGetCount(Base_Servo_AngeleHandle);
-					  if(count==0){
-					  status_base = osMessageQueuePut(Base_Servo_AngeleHandle, &Servo_Angeles[0],8, 100);
-					  if (status_base != osOK) {
-						  CDC_Transmit_FS("Sender Base Queue Error\n", strlen("Sender Base Queue Error\n"));
-						 }
-					  }
-					  else{
-						  CDC_Transmit_FS("Sender Base Queue Full\n", strlen("Sender Base Queue Full\n"));
-					  }
-					  count = osMessageQueueGetCount(Joint1_Servo_AngleHandle);
-					  if(count==0){
-						status_1 = osMessageQueuePut(Joint1_Servo_AngleHandle, &Servo_Angeles[1],8, 100);
-					  if (status_1 != osOK) {
-						CDC_Transmit_FS("Sender Joint1 Queue Error\n", strlen("Sender Base Queue Error\n"));
-							}
-						}
-					  else{
-						  CDC_Transmit_FS("Sender Joint1 Queue Full\n", strlen("Sender Base Queue Full\n"));
-					  }
-					  count = osMessageQueueGetCount(Joint2_Servo_AngleHandle);
-					  if(count==0){
-						status_2 = osMessageQueuePut(Joint2_Servo_AngleHandle, &Servo_Angeles[2],8, 100);
-					  if (status_2 != osOK) {
-						CDC_Transmit_FS("Sender Joint2 Queue Error\n", strlen("Sender Base Queue Error\n"));
-							}
-						}
-					  else{
-						  CDC_Transmit_FS("Sender Joint2 Queue Full\n", strlen("Sender Base Queue Full\n"));
-					  }
-					  count = osMessageQueueGetCount(Gripper_Servo_AngleHandle);
-					  if(count==0){
-						status_Gripper = osMessageQueuePut(Gripper_Servo_AngleHandle, &Servo_Angeles[3],8, 100);
-					  if (status_Gripper != osOK) {
-						CDC_Transmit_FS("Sender Gripper Queue Error\n", strlen("Sender Base Queue Error\n"));
-							}
-						  }
-					  else{
-					  CDC_Transmit_FS("Sender Gripper Queue Full\n", strlen("Sender Base Queue Full\n"));
-					  }
-					}
-				  else {
-					  CDC_Transmit_FS("Failed to take the mutex\n", strlen("Failed to take the mutex\n"));
-				  }
-				  xSemaphoreGive(Load_MutexHandle);
-			  }
+			  MovetoAngle();
 		  	}
 		  else if(Raw_VCP_Data[0]==50)			//Coordinate mode
 		  {
 			  CDC_Transmit_FS("Coordinate mode\n", strlen("Coordinate mode\n"));
-			  // This modul will be created with inverse kinematic function
+			  char *token = strtok(Raw_VCP_Data, "&");
+			  int i = 0 ;
+			  while (token != NULL)
+			      {
+			          printf("%s\n", token);
+			          token = strtok(NULL, "&");
+			          osDelay(100);
+			          //CDC_Transmit_FS(token, strlen(token));
+			          int Point = atoi(token);
+			          Axis_Points[i]=Point;
+			          i++;
+			      }
+			    if(inverseKinematics(Axis_Points[0], Axis_Points[1], Axis_Points[2], L1, L2, L3, &theta1, &theta2, &theta3) == 0) {
+			    	// Converting radian to degree
+			    	Servo_Angeles[0] = theta1 * 180.0 / PI; // angle for Base part of the arm
+			    	Servo_Angeles[1] = 140 - (theta2 * 180.0 / PI);	// angle for first part of the arm
+			    	Servo_Angeles[2] = 120 + (theta3 * 180.0 / PI); // angle for second part of the arm
+			    } else {
+			    	CDC_Transmit_FS("Point is not in work area\n", strlen("Point is not in work area\n"));
+			    }
+			  for(int i = 0;i<=3;i++){
+				  if(Servo_Angeles[i] <= 0){
+					  Servo_Angeles[i] = 1;
+				  }
+				  else if(Servo_Angeles[i] >= 180){
+					  Servo_Angeles[i] = 180;
+				  }
+			  }
+
+			  MovetoAngle();
 		  }
 		  else									//ERROR
 	  	  {
