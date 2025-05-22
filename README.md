@@ -19,7 +19,7 @@ Key Features
 
 #Hooks for Reliability: Implements stack overflow and malloc failure hooks to catch and handle errors during runtime, increasing system robustness.
 
-#Synchronized Motion Control: Ensures that all motors driving the robotic arm move in unison, providing precise control over the arm's position..
+#Synchronized Motion Control: Ensures that all motors driving the robotic arm move in unison, providing precise control over the arm's position.
 
 #3-Axis Control with Gripper: The robotic arm features three degrees of freedom, controlled by SG90 servo motors, and a gripper for object manipulati
 
