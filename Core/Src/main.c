@@ -430,16 +430,44 @@ void Pwm_WriteServo(uint8_t Servo_NO,uint8_t Angle){
                 break;
         }
 }
+static inline void Servo_RampDelay(uint32_t step_delay_ms)
+{
+    if (step_delay_ms == 0U) {
+        osThreadYield();
+        return;
+    }
+
+    TickType_t delay_ticks = pdMS_TO_TICKS(step_delay_ms);
+
+    if (delay_ticks == 0U) {
+        delay_ticks = 1U;
+    }
+
+    osDelay(delay_ticks);
+}
+
 void Servo_Ramp(uint8_t start_angle, uint8_t end_angle, uint16_t step_delay,uint8_t Servo_NO) {
     if (start_angle < end_angle) {
+    if (start_angle <= end_angle) {
         for (uint8_t pos = start_angle; pos <= end_angle; pos++) {
         	Pwm_WriteServo(Servo_NO,pos);
             HAL_Delay(step_delay);
+                Pwm_WriteServo(Servo_NO,pos);
+            if (pos == end_angle) {
+                break;
+            }
+            Servo_RampDelay(step_delay);
         }
     } else {
         for (uint8_t pos = start_angle; pos >= end_angle; pos--) {
         	Pwm_WriteServo(Servo_NO,pos);
             HAL_Delay(step_delay);
+        for (uint8_t pos = start_angle; ; pos--) {
+                Pwm_WriteServo(Servo_NO,pos);
+            if (pos == end_angle) {
+                break;
+            }
+            Servo_RampDelay(step_delay);
         }
     }
 }
